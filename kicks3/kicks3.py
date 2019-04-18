@@ -20,7 +20,7 @@ try:
       for i  in js:
           if i.startswith('//'):
              jsurl=i.replace('//','http://')
-             print(jsurl)
+            # print(jsurl)
           elif i.startswith('http'):
                jsurl=i
           else:
@@ -30,7 +30,7 @@ try:
           if s3:
              bucket=bucket+s3
 except Exception as x:
-       print x
+       print(x)
        pass
 for b in remove_duplicate(bucket):
     print(b)
