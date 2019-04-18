@@ -18,7 +18,7 @@ try:
    #print(s3)
    if len(js)>0:
       for i  in js:
-          if i.startswith('/'):
+          if i.startswith('//'):
              jsurl=i.replace('//','http://')
              print(jsurl)
           elif i.startswith('http'):
