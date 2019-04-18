@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import requests,re,argparse
 bucket=[]
 ap = argparse.ArgumentParser()
