@@ -32,5 +32,7 @@ try:
 except Exception as x:
        print(x)
        pass
+if len(bucket)==0:
+   print("Bucket Not Found")
 for b in remove_duplicate(bucket):
     print(b)
