@@ -11,9 +11,10 @@ def remove_duplicate(x):
 try:
    html=requests.get(target,timeout=10).content
    regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-   regs3=r"[a-zA-Z\-_0-9]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com"
+   regs3=r"[a-zA-Z\-_0-9]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|https?:\/\/s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9]+"
    js=re.findall(regjs,html)
    s3=re.findall(regs3,html)
+   bucket=bucket+s3
    print("Please  Wait")
    #print(s3)
    if len(js)>0:
