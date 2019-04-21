@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kicks3",
-    version="0.0.8",
+    version="0.0.9",
     author="Syed Abuthahir",
     author_email="developerabu@gmail.com",
     description="Recon tool",

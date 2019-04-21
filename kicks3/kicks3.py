@@ -15,7 +15,7 @@ def remove_duplicate(x):
 try:
    html=requests.get(target,timeout=10,headers={'cookie':cookies}).content
    regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-   regs3=r"[a-zA-Z\-_0-9]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!.)s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
+   regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
    js=re.findall(regjs,html)
    s3=re.findall(regs3,html)
    bucket=bucket+s3
@@ -28,7 +28,11 @@ try:
                jsurl=i
           else:
                jsurl=target+'/'+i
-          jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
+          try:
+             jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
+          except Exception as y:
+                 print(y)
+                 pass
           s3=re.findall(regs3,jsfile)
           if s3:
              bucket=bucket+s3
