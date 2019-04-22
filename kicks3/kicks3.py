@@ -69,7 +69,7 @@ try:
    html=requests.get(target,headers={'cookie':cookies},verify=True).content
    html=urllib.unquote(html)
    regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-   regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
+   regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
    js=re.findall(regjs,html)
    s3=re.findall(regs3,html)
    bucket=bucket+s3
