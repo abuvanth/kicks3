@@ -6,11 +6,11 @@ import boto3
 import colorama
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
-bucket=[]
 cookies=''
 ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
 ap.add_argument("-c", "--cookie", required=False,help="Paste ur cookie values for authentication purpose")
+ap.add_argument("-l", "--list", required=False,help="list of sites for testing Eg. sitelist.txt")
 args = vars(ap.parse_args())
 def check_listings (url,bucket):
         s3=boto3.client('s3')
@@ -32,11 +32,11 @@ def check_listings (url,bucket):
 		#print str(e)
 		pass
 
-def check_upload (bucket):
+def check_upload (bucket,url):
 	try:
 		s3=boto3.client('s3')
                 s3.upload_file('poc.txt',bucket,'poc.txt',ExtraArgs={'ACL':'public-read'})
-		write_uploadable(bucket)
+		write_uploadable(bucket,url)
 
 	except Exception,e:
 		#print str(e)
@@ -46,8 +46,8 @@ def check_upload (bucket):
 def write_listable (url):
 	print (Fore.GREEN +"[*] Directory Listings Enabled [*]")
 
-def write_uploadable (bucket):
-	print (Fore.RED + "[*] POC Uploaded! [*]")
+def write_uploadable (bucket,url):
+	print (Fore.RED + "[*] POC Uploaded! [*]"+'-'+url+'/poc.txt')
 
 def scan_s3(f):
 	for line in f:
@@ -59,43 +59,50 @@ def scan_s3(f):
                 b_name=line.split('.s3')[0]
             print(Fore.YELLOW +"[*] Bucket: "+b_name+" [*]")
 	    if check_listings (url,b_name) == True:
-	       check_upload(b_name)
-target=args['url']
+               check_upload(b_name,url)
+
+def remove_duplicate(x):
+    return list(dict.fromkeys(x))	       
+sitelist=[]
+targeturl=args['url']
+sitelist=sitelist+[targeturl]
 if args['cookie']:
    cookies=args['cookie']
-def remove_duplicate(x):
-  return list(dict.fromkeys(x))
-try:
-   html=requests.get(target,headers={'cookie':cookies},verify=True).content
-   html=urllib.unquote(html)
-   regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-   regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
-   js=re.findall(regjs,html)
-   s3=re.findall(regs3,html)
-   bucket=bucket+s3
-   print("Please  Wait")
-   if len(js)>0:
-      for i  in js:
-          if i.startswith('//'):
-             jsurl=i.replace('//','http://')
-          elif i.startswith('http'):
-               jsurl=i
-          else:
-               jsurl=target+'/'+i
-          try:
-             jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
-             s3=re.findall(regs3,jsfile)
-          except Exception as y:
-                 print(y)
-                 pass
-          if s3:
-             bucket=bucket+s3
-except Exception as x:
-       print(x)
+if args['list']:
+   sitelist=sitelist+open(args['list'],'r').readlines()
+for target in sitelist:      
+    try:
+        bucket=[]
+        html=requests.get(target,headers={'cookie':cookies},verify=True).content
+        html=urllib.unquote(html)
+        regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
+        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
+        js=re.findall(regjs,html)
+        s3=re.findall(regs3,html)
+        bucket=bucket+s3
+        print(Fore.BLUE +"Target : "+target+' scanning and testing')
+        if len(js)>0:
+           for i  in js:
+              if i.startswith('//'):
+                 jsurl=i.replace('//','http://')
+              elif i.startswith('http'):
+                  jsurl=i
+              else:
+                  jsurl=target+'/'+i
+              try:
+                  jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
+                  s3=re.findall(regs3,jsfile)
+              except Exception as y:
+                    print(y)
+                    pass
+              if s3:
+                 bucket=bucket+s3
+    except Exception as x:
+           print(x)
+           pass
+    if len(bucket)==0:
+       print("Bucket Not Found")
        pass
-if len(bucket)==0:
-   print("Bucket Not Found")
-   exit()
-else:
-    scan_s3(remove_duplicate(bucket))
+    else:
+        scan_s3(remove_duplicate(bucket))
 
