@@ -1,19 +1,73 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import requests,re,argparse
+import requests,re,argparse,urllib
+import os 
+import boto3
+import colorama
+from colorama import init, Fore, Back, Style
+init(autoreset=True)
 bucket=[]
 cookies=''
 ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
 ap.add_argument("-c", "--cookie", required=False,help="Paste ur cookie values for authentication purpose")
 args = vars(ap.parse_args())
+def check_listings (url,bucket):
+        s3=boto3.client('s3')
+	try:
+		session = requests.Session()
+		headers = {"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Upgrade-Insecure-Requests":"1","User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0","Connection":"close","Accept-Language":"en-US,en;q=0.5","Accept-Encoding":"gzip, deflate"}
+		response = session.get("http://"+url+"", headers=headers)
+		if "<ListBucketResult xmlns" in response.content:
+			write_listable (url)
+			print (Fore.GREEN +"[*] S3 Bucket Lists Files for unathenticated users [*]")
+			return True
+                if s3.list_objects(Bucket=bucket):
+                   print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws athenticated users [*]")
+                   return True
+		if response.status_code == 403:
+			return True
+	except Exception,e:
+		print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
+		#print str(e)
+		pass
+
+def check_upload (bucket):
+	try:
+		s3=boto3.client('s3')
+                s3.upload_file('poc.txt',bucket,'poc.txt',ExtraArgs={'ACL':'public-read'})
+		write_uploadable(bucket)
+
+	except Exception,e:
+		#print str(e)
+		print (Fore.RED +"[*] No POC Uploaded... Access Denied [*]")
+		pass
+
+def write_listable (url):
+	print (Fore.GREEN +"[*] Directory Listings Enabled [*]")
+
+def write_uploadable (bucket):
+	print (Fore.RED + "[*] POC Uploaded! [*]")
+
+def scan_s3(f):
+	for line in f:
+            url=line
+            if line.startswith('s3'):
+                b_name=line.split('/')[1]
+                print(b_name)
+            else:
+                b_name=line.split('.s3')[0]
+            print(Fore.YELLOW +"[*] Bucket: "+b_name+" [*]")
+	    if check_listings (url,b_name) == True:
+	       check_upload(b_name)
 target=args['url']
 if args['cookie']:
    cookies=args['cookie']
 def remove_duplicate(x):
   return list(dict.fromkeys(x))
 try:
-   html=requests.get(target,timeout=10,headers={'cookie':cookies}).content
+   html=requests.get(target,headers={'cookie':cookies},verify=True).content
+   html=urllib.unquote(html)
    regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
    regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
    js=re.findall(regjs,html)
@@ -30,10 +84,10 @@ try:
                jsurl=target+'/'+i
           try:
              jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
+             s3=re.findall(regs3,jsfile)
           except Exception as y:
                  print(y)
                  pass
-          s3=re.findall(regs3,jsfile)
           if s3:
              bucket=bucket+s3
 except Exception as x:
@@ -41,5 +95,7 @@ except Exception as x:
        pass
 if len(bucket)==0:
    print("Bucket Not Found")
-for b in remove_duplicate(bucket):
-    print(b)
+   exit()
+else:
+    scan_s3(remove_duplicate(bucket))
+

@@ -1,5 +1,5 @@
 # kicks3
-S3 bucket finder from html and js
+S3 bucket finder from html,js and bucket misconfiguration testing tool
 
 ## pip install kicks3
 
