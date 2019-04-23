@@ -6,6 +6,9 @@ import boto3
 import colorama
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
+BASE_DIRECTORY = os.path.split(__file__)[0]
+poc=os.path.join(BASE_DIRECTORY,"poc.txt")
+print(poc)
 cookies=''
 ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
@@ -35,11 +38,11 @@ def check_listings (url,bucket):
 def check_upload (bucket,url):
 	try:
 		s3=boto3.client('s3')
-                s3.upload_file('poc.txt',bucket,'poc.txt',ExtraArgs={'ACL':'public-read'})
+                s3.upload_file(poc,bucket,'poc.txt',ExtraArgs={'ACL':'public-read'})
 		write_uploadable(bucket,url)
 
 	except Exception,e:
-		#print str(e)
+		print str(e)
 		print (Fore.RED +"[*] No POC Uploaded... Access Denied [*]")
 		pass
 
@@ -52,9 +55,8 @@ def write_uploadable (bucket,url):
 def scan_s3(f):
 	for line in f:
             url=line
-            if line.startswith('s3'):
+            if 'amazonaws.com/' in line:
                 b_name=line.split('/')[1]
-                print(b_name)
             else:
                 b_name=line.split('.s3')[0]
             print(Fore.YELLOW +"[*] Bucket: "+b_name+" [*]")
@@ -76,7 +78,7 @@ for target in sitelist:
         html=requests.get(target,headers={'cookie':cookies},verify=True).content
         html=urllib.unquote(html)
         regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
+        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
         js=re.findall(regjs,html)
         s3=re.findall(regs3,html)
         bucket=bucket+s3
@@ -93,12 +95,12 @@ for target in sitelist:
                   jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
                   s3=re.findall(regs3,jsfile)
               except Exception as y:
-                    print(y)
+                    #print(y)
                     pass
               if s3:
                  bucket=bucket+s3
     except Exception as x:
-           print(x)
+           #print(x)
            pass
     if len(bucket)==0:
        print("Bucket Not Found")
