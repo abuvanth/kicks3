@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 import requests,re,argparse,urllib
 import os 
+import json
 import boto3
 import colorama
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
 BASE_DIRECTORY = os.path.split(__file__)[0]
 poc=os.path.join(BASE_DIRECTORY,"poc.txt")
-print(poc)
 cookies=''
 ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
@@ -42,7 +42,7 @@ def check_upload (bucket,url):
 		write_uploadable(bucket,url)
 
 	except Exception,e:
-		print str(e)
+		#print str(e)
 		print (Fore.RED +"[*] No POC Uploaded... Access Denied [*]")
 		pass
 
@@ -54,11 +54,11 @@ def write_uploadable (bucket,url):
 
 def scan_s3(f):
 	for line in f:
-            url=line
-            if 'amazonaws.com/' in line:
-                b_name=line.split('/')[1]
+            url=line.replace('\/','/') #if json escape
+            if 'amazonaws.com/' in url:
+                b_name=url.split('/')[1]
             else:
-                b_name=line.split('.s3')[0]
+                b_name=url.split('.s3')[0]
             print(Fore.YELLOW +"[*] Bucket: "+b_name+" [*]")
 	    if check_listings (url,b_name) == True:
                check_upload(b_name,url)
@@ -78,7 +78,7 @@ for target in sitelist:
         html=requests.get(target,headers={'cookie':cookies},verify=True).content
         html=urllib.unquote(html)
         regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\/[a-zA-Z\-_0-9.]+"
+        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\\?\/[a-zA-Z\-_0-9.]+"
         js=re.findall(regjs,html)
         s3=re.findall(regs3,html)
         bucket=bucket+s3
@@ -100,7 +100,7 @@ for target in sitelist:
               if s3:
                  bucket=bucket+s3
     except Exception as x:
-           #print(x)
+           print(x)
            pass
     if len(bucket)==0:
        print("Bucket Not Found")
