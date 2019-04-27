@@ -11,7 +11,7 @@ if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         install_requires = f.read().splitlines()
 setuptools.setup(
-    name="kicks3",
+    name="kick-s3",
     version="1.0.2",
     author="Syed Abuthahir",
     author_email="developerabu@gmail.com",
@@ -21,8 +21,6 @@ setuptools.setup(
     url="https://github.com/abuvanth/kicks3",
     packages=['kicks3'],
     package_dir={'kicks3': 'kicks3'},
-    package_data={'kicks3': ['poc.txt']},
-    include_package_data=True,
     install_requires=install_requires,
     scripts=['kicks3/kicks3.py'],
     classifiers=[

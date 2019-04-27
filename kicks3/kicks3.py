@@ -7,8 +7,7 @@ import boto3
 import colorama
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
-BASE_DIRECTORY = os.path.split(__file__)[0]
-poc=os.path.join(BASE_DIRECTORY,"poc.txt")
+content="test file from kick-s3 tool"
 cookies=''
 ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
@@ -37,10 +36,10 @@ def check_listings (url,bucket):
 
 def check_upload (bucket,url):
 	try:
-		s3=boto3.client('s3')
-                s3.upload_file(poc,bucket,'poc.txt',ExtraArgs={'ACL':'public-read'})
+		s3=boto3.resource('s3')
+                obj=s3.Object(bucket, 'poc.txt').put(Body=content)
+                s3.ObjectAcl(bucket,'poc.txt').put(ACL='public-read')
 		write_uploadable(bucket,url)
-
 	except Exception,e:
 		#print str(e)
 		print (Fore.RED +"[*] No POC Uploaded... Access Denied [*]")
@@ -50,7 +49,7 @@ def write_listable (url):
 	print (Fore.GREEN +"[*] Directory Listings Enabled [*]")
 
 def write_uploadable (bucket,url):
-	print (Fore.RED + "[*] POC Uploaded! [*]"+'-'+url+'/poc.txt')
+	print (Fore.RED + "[*] POC Uploaded! [*]"+'- '+url+'/poc.txt')
 
 def scan_s3(f):
 	for line in f:
