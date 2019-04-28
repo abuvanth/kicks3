@@ -4,6 +4,17 @@ S3 bucket finder from html,js and bucket misconfiguration testing tool
 pip install awscli
 
 aws configure
+
+
+# Installation
+
+pip install git+https://github.com/aboul3la/Sublist3r.git
+
+pip install kick-s3
+
+
+#OR
+
 git clone https://github.com/aboul3la/Sublist3r.git
 
 cd Sublist3r
