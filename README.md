@@ -13,7 +13,7 @@ pip install git+https://github.com/aboul3la/Sublist3r.git
 pip install kick-s3
 
 
-#OR
+# OR
 
 git clone https://github.com/aboul3la/Sublist3r.git
 
@@ -46,6 +46,6 @@ python kicks3.py -u http://target -c 'cookievalues'
 
 
 
-#subdomains
+# subdomains
 
 python kicks3.py -u target.com -s 1
