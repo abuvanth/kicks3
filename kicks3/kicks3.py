@@ -5,6 +5,7 @@ import os
 import json
 import boto3
 import colorama
+import sublist3r
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
 content="test file from kick-s3 tool"
@@ -13,6 +14,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
 ap.add_argument("-c", "--cookie", required=False,help="Paste ur cookie values for authentication purpose")
 ap.add_argument("-l", "--list", required=False,help="list of sites for testing Eg. sitelist.txt")
+ap.add_argument("-s", "--subdomain", required=False,help=" True or False")
 args = vars(ap.parse_args())
 def check_listings (url,bucket):
         s3=boto3.client('s3')
@@ -71,39 +73,50 @@ if args['cookie']:
    cookies=args['cookie']
 if args['list']:
    sitelist=sitelist+open(args['list'],'r').readlines()
-for target in sitelist:      
+
+for targetsite in sitelist:      
     try:
-        bucket=[]
-        html=requests.get(target,headers={'cookie':cookies},verify=True).content
-        html=urllib.unquote(html)
-        regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
-        regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\\?\/[a-zA-Z\-_0-9.]+"
-        js=re.findall(regjs,html)
-        s3=re.findall(regs3,html)
-        bucket=bucket+s3
-        print(Fore.BLUE +"Target : "+target+' scanning and testing')
-        if len(js)>0:
-           for i  in js:
-              if i.startswith('//'):
-                 jsurl=i.replace('//','http://')
-              elif i.startswith('http'):
-                  jsurl=i
-              else:
-                  jsurl=target+'/'+i
-              try:
-                  jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
-                  s3=re.findall(regs3,jsfile)
-              except Exception as y:
-                    #print(y)
-                    pass
-              if s3:
-                 bucket=bucket+s3
+        if args['subdomain']:
+           print('Enumerating Subdomains')
+           subdomains = sublist3r.main(targetsite, 40, targetsite+'_subdomains.txt', ports= None, silent=True, verbose= False, enable_bruteforce= False, engines=None)
+           targetsite=[targetsite]
+           targetsite=targetsite+subdomains
+        else:
+           targetsite=[targetsite]
+        for target in targetsite:
+            if not target.startswith('http'):
+               target='http://'+target.strip()
+            bucket=[]
+            html=requests.get(target,headers={'cookie':cookies}).content
+            html=urllib.unquote(html)
+            regjs=r"(?<=src=['\"])[a-zA-Z0-9_\.\-\:\/]+\.js"
+            regs3=r"[a-zA-Z\-_0-9.]+\.s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com|(?<!\.)s3\.?(?:[a-zA-Z\-_0-9.]+)?\.amazonaws\.com\\?\/[a-zA-Z\-_0-9.]+"
+            js=re.findall(regjs,html)
+            s3=re.findall(regs3,html)
+            bucket=bucket+s3
+            print(Fore.BLUE +"Target : "+target+' scanning and testing')
+            if len(js)>0:
+               for i  in js:
+                  if i.startswith('//'):
+                     jsurl=i.replace('//','http://')
+                  elif i.startswith('http'):
+                       jsurl=i
+                  else:
+                       jsurl=target+'/'+i
+                  try:
+                      jsfile=requests.get(jsurl,timeout=10,headers={'cookie':cookies}).content
+                      s3=re.findall(regs3,jsfile)
+                  except Exception as y:
+                         #print(y)
+                         pass
+                  if s3:
+                     bucket=bucket+s3
+            if len(bucket)==0:
+               print("Bucket Not Found")
+               pass
+            else:
+                scan_s3(remove_duplicate(bucket))
     except Exception as x:
-           print(x)
+           #print(x)
            pass
-    if len(bucket)==0:
-       print("Bucket Not Found")
-       pass
-    else:
-        scan_s3(remove_duplicate(bucket))
 

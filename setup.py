@@ -12,7 +12,7 @@ if os.path.isfile(requirementPath):
         install_requires = f.read().splitlines()
 setuptools.setup(
     name="kick-s3",
-    version="1.0.2",
+    version="1.0.3",
     author="Syed Abuthahir",
     author_email="developerabu@gmail.com",
     description="Recon tool",
@@ -22,6 +22,7 @@ setuptools.setup(
     packages=['kicks3'],
     package_dir={'kicks3': 'kicks3'},
     install_requires=install_requires,
+    dependency_links=['https://github.com/abuvanth/Sublist3r/tarball/master'],
     scripts=['kicks3/kicks3.py'],
     classifiers=[
         "Programming Language :: Python :: 3",
