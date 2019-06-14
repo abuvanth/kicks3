@@ -90,12 +90,10 @@ def finds3(sitelist,cookies='',sub=0):
                       if s3:
                          bucket=bucket+s3
                 if len(bucket)==0:
-                   print("Bucket Not Found")
-                   pass
+                   return ['Bucket not found']
                 else:
                     bucket=bucket+s3
         except Exception as x:
-               print(x)
                pass
     return remove_duplicate(bucket)
 if __name__=='__main__':
@@ -114,18 +112,19 @@ if __name__=='__main__':
    if args['list']:
       sitelist=sitelist+open(args['list'],'r').readlines()
    s3=finds3(sitelist,cookies,sub=args['subdomain'])
-   results=scan_s3(s3)
-   for i in results:
-       print("Bucket name: "+i[0])
-       if i[1]:
-          print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
-       if i[2]:
-          print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws authenticated users [*]")
-       else:
-	  print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
-       if i[3]:
-          print (Fore.GREEN +"[*] File uploaded Successfully [*]")
-       else:
-          print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
+   if len(s3)!=0:
+       results=scan_s3(s3)
+       for i in results:
+           print("Bucket name: "+i[0])
+           if i[1]:
+              print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
+           if i[2]:
+              print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws authenticated users [*]")
+           else:
+    	        print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
+           if i[3]:
+              print (Fore.GREEN +"[*] File uploaded Successfully [*]")
+           else:
+              print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
 
 
