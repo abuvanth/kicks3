@@ -8,20 +8,11 @@ aws configure
 
 # Installation
 
-pip install git+https://github.com/aboul3la/Sublist3r.git
 
 pip install kick-s3
 
 
 # OR
-
-git clone https://github.com/aboul3la/Sublist3r.git
-
-cd Sublist3r
-
-pip install -r requirements.txt
-
-python setup.py install
 
 git clone https://github.com/abuvanth/kicks3.git
 

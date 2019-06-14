@@ -5,7 +5,7 @@ import os
 import json
 import boto3
 import colorama
-import sublist3r
+import kickdomain
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
 content="test file from kick-s3 tool"
@@ -78,7 +78,7 @@ for targetsite in sitelist:
     try:
         if args['subdomain']:
            print('Enumerating Subdomains')
-           subdomains = sublist3r.main(targetsite, 40, targetsite+'_subdomains.txt', ports= None, silent=True, verbose= False, enable_bruteforce= False, engines=None)
+           subdomains = kickdomain.getSubdomains(targetsite)
            targetsite=[targetsite]
            targetsite=targetsite+subdomains
         else:
