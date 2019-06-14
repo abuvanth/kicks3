@@ -116,7 +116,7 @@ if __name__=='__main__':
    s3=finds3(sitelist,cookies,sub=args['subdomain'])
    results=scan_s3(s3)
    for i in results:
-       print("Bucket name: "+I[0])
+       print("Bucket name: "+i[0])
        if i[1]:
           print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
        if i[2]:
