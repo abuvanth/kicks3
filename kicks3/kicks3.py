@@ -8,7 +8,6 @@ import colorama
 import kickdomain
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
-content="test file from kick-s3 tool"
 def check_listings (url,bucket):
         s3=boto3.client('s3')
 	try:
@@ -16,51 +15,41 @@ def check_listings (url,bucket):
 		headers = {"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Upgrade-Insecure-Requests":"1","User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0","Connection":"close","Accept-Language":"en-US,en;q=0.5","Accept-Encoding":"gzip, deflate"}
 		response = session.get("http://"+url+"", headers=headers)
 		if "<ListBucketResult xmlns" in response.content:
-			write_listable (url)
-			print (Fore.GREEN +"[*] S3 Bucket Lists Files for unathenticated users [*]")
-			return True
+			unauth=True
                 if s3.list_objects(Bucket=bucket):
-                   print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws athenticated users [*]")
-                   return True
-		if response.status_code == 403:
-			return True
+                   auth=True
 	except Exception,e:
-		print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
 		#print str(e)
-		pass
+		return (False,False)
+        return (unauth, auth)
 
 def check_upload (bucket,url):
-	try:
-		s3=boto3.resource('s3')
-                obj=s3.Object(bucket, 'poc.txt').put(Body=content)
-                s3.ObjectAcl(bucket,'poc.txt').put(ACL='public-read')
-		write_uploadable(bucket,url)
-	except Exception,e:
-		#print str(e)
-		print (Fore.RED +"[*] No POC Uploaded... Access Denied [*]")
-		pass
-
-def write_listable (url):
-	print (Fore.GREEN +"[*] Directory Listings Enabled [*]")
-
-def write_uploadable (bucket,url):
-	print (Fore.RED + "[*] POC Uploaded! [*]"+'- '+url+'/poc.txt')
-
+        content="test file from kick-s3 tool"
+	try:		   
+            s3=boto3.resource('s3')
+            s3.Object(bucket, 'poc.txt').put(Body=content)
+            s3.ObjectAcl(bucket,'poc.txt').put(ACL='public-read')
+	    return True
+	except Exception,e:		
+               return False
 def scan_s3(f):
+        result=[]
 	for line in f:
             url=line.replace('\/','/') #if json escape
             if 'amazonaws.com/' in url:
                 b_name=url.split('/')[1]
             else:
                 b_name=url.split('.s3')[0]
-            print(Fore.YELLOW +"[*] Bucket: "+b_name+" [*]")
-	    if check_listings (url,b_name) == True:
-               check_upload(b_name,url)
+	    listing=check_listings (url,b_name)
+            upload=check_upload(b_name,url)
+            result=result+[(b_name,listing[0],listing[1],upload)]
+        return result
 
 def remove_duplicate(x):
     return list(dict.fromkeys(x))	       
 
 def finds3(sitelist,cookies='',sub=0):
+    bucket=[]
     for targetsite in sitelist:      
         try:
             if sub:
@@ -73,8 +62,6 @@ def finds3(sitelist,cookies='',sub=0):
             for target in targetsite:
                 if not target.startswith('http'):
                    target='http://'+target.strip()
-                print(Fore.BLUE +"Target : "+target+' scanning and testing')
-                bucket=[]
                 html=''
                 try:
                   html=requests.get(target,headers={'cookie':cookies},timeout=10).content
@@ -106,10 +93,11 @@ def finds3(sitelist,cookies='',sub=0):
                    print("Bucket Not Found")
                    pass
                 else:
-                    scan_s3(remove_duplicate(bucket))
+                    bucket=bucket+s3
         except Exception as x:
                print(x)
                pass
+    return remove_duplicate(bucket)
 if __name__=='__main__':
    ap = argparse.ArgumentParser()
    ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
@@ -125,4 +113,19 @@ if __name__=='__main__':
       cookies=args['cookie']
    if args['list']:
       sitelist=sitelist+open(args['list'],'r').readlines()
-   finds3(sitelist,cookies,sub=args['subdomain'])
+   s3=finds3(sitelist,cookies,sub=args['subdomain'])
+   results=scan_s3(s3)
+   for i in results:
+       print("Bucket name: "+I[0])
+       if i[1]:
+          print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
+       if i[2]:
+          print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws authenticated users [*]")
+       else:
+	  print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
+       if i[3]:
+          print (Fore.GREEN +"[*] File uploaded Successfully [*]")
+       else:
+          print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
+
+
