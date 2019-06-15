@@ -112,7 +112,7 @@ if __name__=='__main__':
    if args['list']:
       sitelist=sitelist+open(args['list'],'r').readlines()
    s3=finds3(sitelist,cookies,sub=args['subdomain'])
-   if len(s3)!=0:
+   if s3[0]!='Bucket not found':
        results=scan_s3(s3)
        for i in results:
            print("Bucket name: "+i[0])
@@ -126,5 +126,5 @@ if __name__=='__main__':
               print (Fore.GREEN +"[*] File uploaded Successfully [*]")
            else:
               print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
-
-
+   else:
+       print (s3[0])
