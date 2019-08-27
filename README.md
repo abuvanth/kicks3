@@ -54,6 +54,14 @@ for result in scan_result:
 
     print(result)#bucketname(testname),listable_for_unauth_users(true or false),listable_auth_users(true or false),writable(true or false)
 ```
+
+# buckets from textfile
+
+```
+import kicks3
+blist=open('s3.buckets.txt','r').readlines()
+result=kicks3.scan_s3(blist)
+```
 # Scan for subdomains 
 ```
 bucketurllist=kicks3.finds3(['target.com'],sub=1,cookies='valueofyoursitescookie') #cookies for authenticated pages,
@@ -64,4 +72,8 @@ for result in scan_result:
 
     print(result)#bucketname(testname),listable_for_unauth_users(true or false),listable_auth_users(true or false),writable(true or false)
 ```
+
+## results are stored in s3out.txt file.
+
+
 Note: sub and cookies are optional parameters of finds3 function

@@ -158,7 +158,7 @@ if __name__=='__main__':
               print (Fore.GREEN +"[*] File uploaded Successfully [*]")
            else:
               print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
-           if I[4]:
+           if i[4]:
               print(Fore.RED +"[*] Get acl read")
    else:
        print (s3[0])
