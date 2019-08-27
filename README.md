@@ -46,8 +46,8 @@ python kicks3.py -u target.com -s 1
 ```
 import kicks3
 
-bucketlist=kicks3.finds3(['target.com'])
-
+bucketurllist=kicks3.finds3('target.com')
+bucketlist=kicks3.get_bucket_name(bucketurllist)
 scan_result=kicks3.scan_s3(bucketlist)
 
 for result in scan_result:
@@ -56,8 +56,8 @@ for result in scan_result:
 ```
 # Scan for subdomains 
 ```
-bucketlist=kicks3.finds3(['target.com'],sub=1,cookies='valueofyoursitescookie') #cookies for authenticated pages,
-
+bucketurllist=kicks3.finds3(['target.com'],sub=1,cookies='valueofyoursitescookie') #cookies for authenticated pages,
+bucketlist=kicks3.get_bucket_name(bucketurllist)
 scan_result=kicks3.scan_s3(bucketlist)
 
 for result in scan_result:
