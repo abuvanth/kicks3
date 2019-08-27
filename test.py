@@ -1,5 +1,5 @@
-from kicks3 import *
+import boto3 
+s3=boto3.client('s3')
+b_acl=s3.get_bucket_acl(Bucket='vectortestinfo')
+print(b_acl)
 
-bucketnames='testbucketname' 
-result=scan_s3(bucketnames)
-print(result)

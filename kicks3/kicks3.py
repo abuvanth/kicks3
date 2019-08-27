@@ -30,6 +30,16 @@ def check_listings (bucket):
 		return (False,False)
         return (unauth, auth)
 
+def get_bucket_acl(bucket):
+    try:    
+       s3=boto3.client('s3')
+       b_acl=s3.get_bucket_acl(Bucket=bucket)
+       return True
+    except: 
+       return False
+    
+    
+
 def get_bucket_name(urllist):
   b_list=[]
   for line in urllist:
@@ -58,9 +68,10 @@ def scan_s3(f,silent=False):
 	for line in f:
 	    listing=check_listings (line)
             upload=check_upload(line)
+            get_acl=get_bucket_acl(line)
             if not silent:
-               print('Bucketname - '+line,'unauth_list - '+str(listing[0]),'auth_list - '+str(listing[1]),'auth_write - '+str(upload))
-            result=result+[(line,listing[0],listing[1],upload)]
+               print('Bucketname - '+line,'unauth_list - '+str(listing[0]),'auth_list - '+str(listing[1]),'auth_write - '+str(upload),'get-bucket-acl'+str(get_acl))
+            result=result+[(line,listing[0],listing[1],upload,get_acl)]
         return result	       
 
 def finds3(sitelist,cookies='',sub=0):
@@ -130,7 +141,7 @@ if __name__=='__main__':
       sitelist=sitelist+open(args['list'],'r').readlines()
    s3=finds3(sitelist,cookies,sub=args['subdomain'])
    if s3[0]!='Bucket not found':
-       results=scan_s3(s3)
+       results=scan_s3(s3,silent=True)
        for i in results:
            print("Bucket name: "+i[0])
            if i[1]:
@@ -143,5 +154,7 @@ if __name__=='__main__':
               print (Fore.GREEN +"[*] File uploaded Successfully [*]")
            else:
               print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
+           if I[4]:
+              print(Fore.RED +"[*] Get acl read")
    else:
        print (s3[0])
