@@ -66,11 +66,15 @@ def scan_s3(f,silent=False):
         if not islist(f):
            f=[f]
 	for line in f:
-	    listing=check_listings (line)
+            line=line.strip('\n')
+            s3out=open('s3out.txt','a')
+            listing=check_listings (line)
             upload=check_upload(line)
             get_acl=get_bucket_acl(line)
             if not silent:
                print('Bucketname - '+line,'unauth_list - '+str(listing[0]),'auth_list - '+str(listing[1]),'auth_write - '+str(upload),'get-bucket-acl'+str(get_acl))
+            s3out.write('Bucketname - '+line+','+'unauth_list - '+str(listing[0])+','+'auth_list - '+str(listing[1])+','+'auth_write - '+str(upload)+','+'get-bucket-acl'+str(get_acl+'\n'))
+            s3out.close()
             result=result+[(line,listing[0],listing[1],upload,get_acl)]
         return result	       
 
