@@ -8,12 +8,19 @@ import colorama
 import kickdomain
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
-def check_listings (url,bucket):
+def remove_duplicate(x):
+    return list(dict.fromkeys(x))
+def islist(obj):
+    if("list" in str(type(obj))): 
+      return True
+    else: 
+      return False
+def check_listings (bucket):
         s3=boto3.client('s3')
 	try:
 		session = requests.Session()
 		headers = {"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Upgrade-Insecure-Requests":"1","User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0","Connection":"close","Accept-Language":"en-US,en;q=0.5","Accept-Encoding":"gzip, deflate"}
-		response = session.get("http://"+url+"", headers=headers)
+		response = session.get("http://"+bucket+".s3.amazonaws.com", headers=headers)
 		if "<ListBucketResult xmlns" in response.content:
 			unauth=True
                 if s3.list_objects(Bucket=bucket):
@@ -23,7 +30,19 @@ def check_listings (url,bucket):
 		return (False,False)
         return (unauth, auth)
 
-def check_upload (bucket,url):
+def get_bucket_name(urllist):
+  b_list=[]
+  for line in urllist:
+      url=line.replace('\/','/') #if json escape
+      if 'amazonaws.com/' in url:
+          b_name=url.split('/')[1]
+      else:
+          b_name=url.split('.s3')[0]
+      b_list.append(b_name)
+  return remove_duplicate(b_list)
+
+
+def check_upload (bucket):
         content="test file from kick-s3 tool"
 	try:		   
             s3=boto3.resource('s3')
@@ -32,24 +51,22 @@ def check_upload (bucket,url):
 	    return True
 	except Exception,e:		
                return False
-def scan_s3(f):
+def scan_s3(f,silent=False):
         result=[]
+        if not islist(f):
+           f=[f]
 	for line in f:
-            url=line.replace('\/','/') #if json escape
-            if 'amazonaws.com/' in url:
-                b_name=url.split('/')[1]
-            else:
-                b_name=url.split('.s3')[0]
-	    listing=check_listings (url,b_name)
-            upload=check_upload(b_name,url)
-            result=result+[(b_name,listing[0],listing[1],upload)]
-        return result
-
-def remove_duplicate(x):
-    return list(dict.fromkeys(x))	       
+	    listing=check_listings (line)
+            upload=check_upload(line)
+            if not silent:
+               print('Bucketname - '+line,'unauth_list - '+str(listing[0]),'auth_list - '+str(listing[1]),'auth_write - '+str(upload))
+            result=result+[(line,listing[0],listing[1],upload)]
+        return result	       
 
 def finds3(sitelist,cookies='',sub=0):
     bucket=[]
+    if not islist(sitelist):
+       sitelist=[sitelist]
     for targetsite in sitelist:      
         try:
             if sub:
@@ -95,7 +112,7 @@ def finds3(sitelist,cookies='',sub=0):
                     bucket=bucket+s3
         except Exception as x:
                pass
-    return remove_duplicate(bucket)
+    return bucket
 if __name__=='__main__':
    ap = argparse.ArgumentParser()
    ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
