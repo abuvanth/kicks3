@@ -132,11 +132,15 @@ def finds3(sitelist,cookies='',sub=0):
     return bucket
 if __name__=='__main__':
    ap = argparse.ArgumentParser()
-   ap.add_argument("-u", "--url", required=True,help="Please enter target Url start with http or https")
+   ap.add_argument("-u", "--url", required=False,help="Please enter target Url start with http or https")
+   ap.add_argument("-b", "--bucket", required=False,help="Please enter Bucketname")
    ap.add_argument("-c", "--cookie", required=False,help="Paste ur cookie values for authentication purpose")
    ap.add_argument("-l", "--list", required=False,help="list of sites for testing Eg. sitelist.txt")
    ap.add_argument("-s", "--subdomain", required=False,help=" True or False")
    args = vars(ap.parse_args())
+   if args['url']==None and args['bucket']==None:
+      print('please give input like bucketname or url')
+      exit()
    sitelist=[]
    cookies=''
    targeturl=args['url']
@@ -145,23 +149,26 @@ if __name__=='__main__':
       cookies=args['cookie']
    if args['list']:
       sitelist=sitelist+open(args['list'],'r').readlines()
-   s3urls=finds3(sitelist,cookies,sub=args['subdomain'])
-   if s3urls[0]!='Bucket not found':
-       bucketname=get_bucket_name(s3urls)
-       results=scan_s3(bucketname,silent=True)
-       for i in results:
-           print("Bucket name: "+i[0])
-           if i[1]:
-              print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
-           if i[2]:
-              print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws authenticated users [*]")
-           else:
-    	        print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
-           if i[3]:
-              print (Fore.GREEN +"[*] File uploaded Successfully [*]")
-           else:
-              print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
-           if i[4]:
-              print(Fore.GREEN +"[*] Get acl read")
-   else:
-       print (s3[0])
+   if args['url']:
+      s3urls=finds3(sitelist,cookies,sub=args['subdomain'])
+      if s3urls[0]!='Bucket not found':
+         bucketname=get_bucket_name(s3urls)
+         results=scan_s3(bucketname,silent=True)
+      else:
+         print(results[0])
+   if args['bucket']:
+      results=scan_s3(args['bucket'],silent=True)
+   for i in results:
+       print("Bucket name: "+i[0])
+       if i[1]:
+          print (Fore.GREEN +"[*] S3 Bucket Lists Files for unauthenticated users [*]")
+       if i[2]:
+          print (Fore.GREEN +"[*] S3 Bucket Lists Files for all aws authenticated users [*]")
+       else:
+    	  print (Fore.RED +"[*] Directory Listings ... Access Denied [*]")
+       if i[3]:
+          print (Fore.GREEN +"[*] File uploaded Successfully [*]")
+       else:
+          print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
+       if i[4]:
+          print(Fore.GREEN +"[*] Get acl read")
