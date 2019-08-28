@@ -16,6 +16,8 @@ def islist(obj):
     else: 
       return False
 def check_listings (bucket):
+        unauth=False
+        auth=False
         s3=boto3.client('s3')
 	try:
 		session = requests.Session()
@@ -27,7 +29,7 @@ def check_listings (bucket):
                    auth=True
 	except Exception,e:
 		#print str(e)
-		return (False,False)
+		return (unauth,auth)
         return (unauth, auth)
 
 def get_bucket_acl(bucket):
@@ -73,7 +75,7 @@ def scan_s3(f,silent=False):
             get_acl=get_bucket_acl(line)
             if not silent:
                print('Bucketname - '+line,'unauth_list - '+str(listing[0]),'auth_list - '+str(listing[1]),'auth_write - '+str(upload),'get-bucket-acl'+str(get_acl))
-            s3out.write('Bucketname - '+line+','+'unauth_list - '+str(listing[0])+','+'auth_list - '+str(listing[1])+','+'auth_write - '+str(upload)+','+'get-bucket-acl'+str(get_acl+'\n'))
+            s3out.write('Bucketname - '+line+','+'unauth_list - '+str(listing[0])+','+'auth_list - '+str(listing[1])+','+'auth_write - '+str(upload)+','+'get-bucket-acl'+str(get_acl)+'\n')
             s3out.close()
             result=result+[(line,listing[0],listing[1],upload,get_acl)]
         return result	       
@@ -143,9 +145,10 @@ if __name__=='__main__':
       cookies=args['cookie']
    if args['list']:
       sitelist=sitelist+open(args['list'],'r').readlines()
-   s3=finds3(sitelist,cookies,sub=args['subdomain'])
-   if s3[0]!='Bucket not found':
-       results=scan_s3(s3,silent=True)
+   s3urls=finds3(sitelist,cookies,sub=args['subdomain'])
+   if s3urls[0]!='Bucket not found':
+       bucketname=get_bucket_name(s3urls)
+       results=scan_s3(bucketname,silent=True)
        for i in results:
            print("Bucket name: "+i[0])
            if i[1]:
@@ -159,6 +162,6 @@ if __name__=='__main__':
            else:
               print (Fore.RED +"[*] File  Not Upload ... Access Denied [*]")
            if i[4]:
-              print(Fore.RED +"[*] Get acl read")
+              print(Fore.GREEN +"[*] Get acl read")
    else:
        print (s3[0])
