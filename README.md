@@ -1,13 +1,22 @@
 # kicks3
-S3 bucket finder from html,js and bucket misconfiguration testing tool
+
+S3 bucket finder from html,js and bucket misconfiguration testing tool.
+
+Currently this tool check three testcases
+
+1. Object listing for Unauthenticated users
+
+2. Object listing for Authenticated users
+
+3. Public writable for all aws users
 
 pip install awscli
 
 aws configure
 
+### get your aws keys from aws console
 
 # Installation
-
 
 pip install kick-s3
 
@@ -18,28 +27,37 @@ git clone https://github.com/abuvanth/kicks3.git
 
 cd kicks3
 
-pip install -r requirements.txt
+python setup.py install
 
 ## Usage
 
 # single target
 
-python kicks3.py -u http://target
+ kicks3.py -u http://target
+ 
+ this will looking for s3 buckets in html and javascript files.
 
-# list of target 
+# Single Bucket 
 
-python kicks3.py -u http://target -l sitelist.txt
+ kicks3.py -b bucketname
+ 
+ test single bucket name
+
+# Bucket list
+
+ kicks3.py -bl bucketnamelist.txt
+
+# list of websites 
+
+ kicks3.py -u http://target -l sitelist.txt
 
 # authenticated page
 
-
-python kicks3.py -u http://target -c 'cookievalues'
-
-
+ kicks3.py -u http://target -c 'cookievalues'
 
 # subdomains
 
-python kicks3.py -u target.com -s 1
+ kicks3.py -u target.com -s 1
 
 
 # Use kicks3 as a module
@@ -55,7 +73,7 @@ for result in scan_result:
     print(result)#bucketname(testname),listable_for_unauth_users(true or false),listable_auth_users(true or false),writable(true or false)
 ```
 
-# buckets from textfile
+# buckets from text file
 
 ```
 import kicks3

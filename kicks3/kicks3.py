@@ -134,12 +134,13 @@ if __name__=='__main__':
    ap = argparse.ArgumentParser()
    ap.add_argument("-u", "--url", required=False,help="Please enter target Url start with http or https")
    ap.add_argument("-b", "--bucket", required=False,help="Please enter Bucketname")
+   ap.add_argument("-bl", "--bucketlist", required=False,help="Bucketname List")
    ap.add_argument("-c", "--cookie", required=False,help="Paste ur cookie values for authentication purpose")
    ap.add_argument("-l", "--list", required=False,help="list of sites for testing Eg. sitelist.txt")
    ap.add_argument("-s", "--subdomain", required=False,help=" True or False")
    args = vars(ap.parse_args())
-   if args['url']==None and args['bucket']==None:
-      print('please give input like bucketname or url')
+   if args['url']==None and args['bucket']==None and args['bucketlist']==None:
+      print('please give input like -b bucketname  or -u url or -bl bucketnamelist.txt')
       exit()
    sitelist=[]
    cookies=''
@@ -158,6 +159,10 @@ if __name__=='__main__':
          print(results[0])
    if args['bucket']:
       results=scan_s3(args['bucket'],silent=True)
+   if args['bucketlist']:
+      bucket_list=open(args['bucketlist'],'r').readlines()
+      results=scan_s3(bucket_list,silent=True)
+      
    for i in results:
        print("Bucket name: "+i[0])
        if i[1]:
