@@ -153,7 +153,7 @@ if __name__=='__main__':
       sitelist=sitelist+open(args['list'],'r').readlines()
    if args['url']:
       s3urls=finds3(sitelist,cookies,sub=args['subdomain'])
-      if len(s3urls)==0:
+      if len(s3urls)!=0:
          if s3urls[0]!='Bucket not found':
             bucketname=get_bucket_name(s3urls)
             results=scan_s3(bucketname,silent=True)
