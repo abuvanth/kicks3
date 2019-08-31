@@ -33,8 +33,7 @@ python setup.py install
 
 
 ##demo
-[![asciicast](https://asciinema.org/a/265303.svg)](https://asciinema.org/a/265303)
-
+[![asciicast](https://asciinema.org/a/265305.svg)](https://asciinema.org/a/265305)
 
 
 
