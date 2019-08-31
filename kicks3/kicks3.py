@@ -158,7 +158,7 @@ if __name__=='__main__':
             bucketname=get_bucket_name(s3urls)
             results=scan_s3(bucketname,silent=True)
          else:
-            print(results[0])
+            print(s3urls[0])
       else:
          print("Check your domain")
    if args['bucket']:
