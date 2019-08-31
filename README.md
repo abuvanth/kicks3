@@ -31,6 +31,13 @@ python setup.py install
 
 ## Usage
 
+
+##demo
+[![asciicast](https://asciinema.org/a/265303.svg)](https://asciinema.org/a/265303)
+
+
+
+
 # single target
 
  kicks3.py -u http://target
