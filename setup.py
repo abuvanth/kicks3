@@ -12,7 +12,7 @@ if os.path.isfile(requirementPath):
         install_requires = f.read().splitlines()
 setuptools.setup(
     name="kick-s3",
-    version="2.0.2",
+    version="2.0.4",
     author="Syed Abuthahir",
     author_email="developerabu@gmail.com",
     description="Recon tool",

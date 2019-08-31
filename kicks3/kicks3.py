@@ -131,6 +131,7 @@ def finds3(sitelist,cookies='',sub=0):
                pass
     return bucket
 if __name__=='__main__':
+   results=[]
    ap = argparse.ArgumentParser()
    ap.add_argument("-u", "--url", required=False,help="Please enter target Url start with http or https")
    ap.add_argument("-b", "--bucket", required=False,help="Please enter Bucketname")
@@ -152,11 +153,14 @@ if __name__=='__main__':
       sitelist=sitelist+open(args['list'],'r').readlines()
    if args['url']:
       s3urls=finds3(sitelist,cookies,sub=args['subdomain'])
-      if s3urls[0]!='Bucket not found':
-         bucketname=get_bucket_name(s3urls)
-         results=scan_s3(bucketname,silent=True)
+      if len(s3urls)==0:
+         if s3urls[0]!='Bucket not found':
+            bucketname=get_bucket_name(s3urls)
+            results=scan_s3(bucketname,silent=True)
+         else:
+            print(results[0])
       else:
-         print(results[0])
+         print("Check your domain")
    if args['bucket']:
       results=scan_s3(args['bucket'],silent=True)
    if args['bucketlist']:
