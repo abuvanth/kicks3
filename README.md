@@ -2,13 +2,17 @@
 
 S3 bucket finder from html,js and bucket misconfiguration testing tool.
 
-Currently this tool check three testcases
+Currently this tool check five testcases
 
 1. Object listing for Unauthenticated users
 
 2. Object listing for Authenticated users
 
 3. Public writable for all aws users
+
+4. Bucket Acl public read
+
+5. Put Bucket Policy
 
 pip install awscli
 
